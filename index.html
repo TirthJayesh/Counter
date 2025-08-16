@@ -1,695 +1,606 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Counter</title>
-    <link href="https://fonts.googleapis.com" rel="preconnect" />
-    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap"
-      rel="stylesheet"
-    />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <style type="text/tailwindcss">
-      :root {
-        --primary-color: #0d7ff2;
-        --background-start-rgb: 243, 244, 246;
-        --background-end-rgb: 229, 231, 235;
-        --text-color: #1f2937;
-        --muted-text-color: #6b7280;
-        --card-bg: 255, 255, 255;
-        --progress-text-color: #ffffff;
-        --progress-text-color-dark: #1f2937;
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Counter</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style type="text/tailwindcss">
+    :root {
+      --primary-color: #0d7ff2;
+      --background-start-rgb: 243, 244, 246;
+      --background-end-rgb: 229, 231, 235;
+      --text-color: #1f2937;
+      --muted-text-color: #6b7280;
+      --card-bg: 255, 255, 255;
+      --progress-text-color: #ffffff;
+      --progress-text-color-dark: #1f2937;
+    }
+    .dark {
+      --primary-color: #f59e0b;
+      --background-start-rgb: 17, 24, 39;
+      --background-end-rgb: 31, 41, 55;
+      --text-color: #f9fafb;
+      --muted-text-color: #9ca3af;
+      --card-bg: 24, 24, 27;
+      --progress-text-color: #000000;
+      --progress-text-color-dark: #f3f4f6;
+    }
+    body {
+      font-family: 'Manrope', sans-serif;
+      min-height: 100dvh;
+      color: var(--text-color);
+      background-color: rgb(var(--background-start-rgb));
+    }
+    #history-section, #achievements-section {
+      max-height: 500px;
+      opacity: 1;
+      transform: translateY(0);
+      transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out, transform 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+      overflow: hidden;
+    }
+    #history-section.hidden, #achievements-section.hidden {
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-1rem);
+      margin-top: 0 !important;
+    }
+    #toast {
+      transform: translateY(150%);
+      transition: transform 0.5s ease-in-out;
+    }
+    #toast.show {
+      transform: translateY(0);
+    }
+    #note-dialog,
+    #confirmation-dialog,
+    #delete-confirmation-dialog {
+      transform: translateY(100%);
+      transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #note-dialog.show,
+    #confirmation-dialog.show,
+    #delete-confirmation-dialog.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .progress-bar-inner {
+      transition: width 0.3s ease-in-out;
+    }
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
       }
-      .dark {
-        --primary-color: #f59e0b;
-        --background-start-rgb: 12, 10, 9;
-        --background-end-rgb: 39, 39, 42;
-        --text-color: #f3f4f6;
-        --muted-text-color: #a1a1aa;
-        --card-bg: 24, 24, 27;
-        --progress-text-color: #000000;
-        --progress-text-color-dark: #f3f4f6;
+      100% {
+        transform: translateY(100vh) rotate(720deg);
       }
-      body {
-        font-family: "Manrope", sans-serif;
-        min-height: 100dvh;
-        color: var(--text-color);
-        background-color: rgb(var(--background-start-rgb));
-      }
-      #history-section {
-        max-height: 500px;
-        opacity: 1;
-        transform: translateY(0);
-        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out,
-          transform 0.5s ease-in-out, margin-top 0.5s ease-in-out;
-        overflow: hidden;
-      }
-      #history-section.hidden {
-        max-height: 0;
-        opacity: 0;
-        transform: translateY(-1rem);
-        margin-top: 0 !important;
-      }
-      #toast {
-        transform: translateY(150%);
-        transition: transform 0.5s ease-in-out;
-      }
-      #toast.show {
-        transform: translateY(0);
-      }
-      #note-dialog,
-      #confirmation-dialog,
-      #delete-confirmation-dialog {
-        transform: translateY(100%);
-        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-        opacity: 0;
-        pointer-events: none;
-      }
-      #note-dialog.show,
-      #confirmation-dialog.show,
-      #delete-confirmation-dialog.show {
-        transform: translateY(0);
-        opacity: 1;
-        pointer-events: auto;
-      }
-      .progress-bar-inner {
-        transition: width 0.3s ease-in-out;
-      }
-      @keyframes confetti-fall {
-        0% {
-          transform: translateY(-100vh) rotate(0deg);
-        }
-        100% {
-          transform: translateY(100vh) rotate(720deg);
-        }
-      }
-      .confetti {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 10px;
-        height: 10px;
-        background-color: var(--primary-color);
-        opacity: 0.8;
-        pointer-events: none;
-        animation: confetti-fall 3s linear infinite;
-        z-index: 100;
-      }
-      .progress-text-bg {
-        color: var(--progress-text-color);
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-      }
-      .dark .progress-text-bg {
-        color: var(--progress-text-color-dark);
-        text-shadow: none;
-      }
-      .progress-text-fg {
-        color: var(--progress-text-color);
-        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-      }
-      .dark .progress-text-fg {
-        color: var(--progress-text-color);
-        text-shadow: none;
-      }
-    </style>
-    <style>
-      body {
-        min-height: max(884px, 100dvh);
-      }
-    </style>
-    <style>
-      body {
-        min-height: max(884px, 100dvh);
-      }
-    </style>
-    <style>
-      body {
-        min-height: max(884px, 100dvh);
-      }
-    </style>
-    <style>
-      body {
-        min-height: max(884px, 100dvh);
-      }
-    </style>
+    }
+    .confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 10px;
+      height: 10px;
+      background-color: var(--primary-color);
+      opacity: 0.8;
+      pointer-events: none;
+      animation: confetti-fall 3s linear infinite;
+      z-index: 100;
+    }
+    .progress-text-bg {
+      color: var(--progress-text-color);
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .dark .progress-text-bg {
+      color: var(--progress-text-color-dark);
+      text-shadow: none;
+    }
+    .progress-text-fg {
+      color: var(--progress-text-color);
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+    .dark .progress-text-fg {
+      color: var(--progress-text-color);
+      text-shadow: none;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    .tab-active {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        background-color: rgba(from var(--primary-color) r g b / 0.1);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
   </head>
-  <body class="bg-gray-100 dark:bg-stone-900">
-    <div
-      class="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-gradient-to-br from-[rgb(var(--background-start-rgb))] to-[rgb(var(--background-end-rgb))] text-[var(--text-color)]"
-    >
-      <div
-        class="pointer-events-none fixed inset-0 z-[100] overflow-hidden"
-        id="confetti-container"
-      ></div>
-      <header class="flex items-center justify-between p-4 sm:p-6">
-        <h1 class="text-xl font-bold">Counter</h1>
-        <div class="flex items-center gap-2">
-          <div class="relative">
-            <button
-              class="group flex h-11 w-11 items-center justify-center rounded-full bg-white/10 dark:bg-zinc-800/50 shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20 dark:border-zinc-700/80"
-              id="theme-menu-button"
-            >
-              <svg
-                class="h-5 w-5 text-gray-700 dark:text-gray-100 transition-colors"
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
-                ></path>
-              </svg>
-            </button>
-            <div
-              aria-labelledby="theme-menu-button"
-              aria-orientation="vertical"
-              class="absolute right-0 mt-2 w-40 origin-top-right rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none hidden"
-              id="theme-menu"
-              role="menu"
-            >
-              <div class="py-1" role="none">
-                <button
-                  class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50"
-                  data-theme="light"
-                >
-                  <svg
-                    fill="currentColor"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707z"
-                    ></path>
-                  </svg>
-                  Light
-                </button>
-                <button
-                  class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50"
-                  data-theme="dark"
-                >
-                  <svg
-                    fill="currentColor"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"
-                    ></path>
-                  </svg>
-                  Dark
-                </button>
-                <button
-                  class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50"
-                  data-theme="system"
-                >
-                  <svg
-                    fill="currentColor"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    width="16"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M5 2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1H5V2zm1.5 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM5 1c-.552 0-1 .448-1 1v12c0 .552.448 1 1 1h6c.552 0 1-.448 1-1V2c0-.552-.448-1-1-1H5z"
-                    ></path>
-                  </svg>
-                  System
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-      <main
-        class="flex flex-grow flex-col items-center justify-center px-4 pb-16"
-      >
-        <div class="flex w-full flex-col items-center justify-center">
-          <div class="my-8 text-center">
-            <span
-              class="text-[140px] font-extrabold leading-none tracking-tighter transition-all duration-300 ease-in-out"
-              id="counter-value"
-              >0</span
-            >
-          </div>
-          <div class="w-full max-w-sm px-4">
-            <div
-              class="relative h-6 w-full rounded-full bg-gray-200 dark:bg-zinc-800 shadow-inner overflow-hidden"
-            >
-              <div class="absolute inset-0 flex items-center justify-center">
-                
-              </div>
-              <div
-                class="progress-bar-inner absolute left-0 top-0 h-full rounded-full bg-[var(--primary-color)]"
-                id="progress-bar"
-                style="width: 0%"
-              >
-                <div
-                  class="absolute inset-0 flex items-center justify-center overflow-hidden"
-                >
-                  <span
-                    class="progress-text-fg text-base font-bold"
-                    id="progress-text-fg"
-                    >0%</span
-                  >
-                </div>
-              </div>
-            </div>
-          </div>
-          <div
-            class="my-10 flex w-full max-w-sm items-center justify-center gap-6"
-          >
-            <button
-              class="group flex size-24 items-center justify-center rounded-full bg-white/20 dark:bg-zinc-800/60 shadow-lg backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/30 dark:border-zinc-700"
-              id="decrement"
-            >
-              <svg
-                class="text-gray-800 dark:text-gray-100"
-                fill="none"
-                height="36"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="3"
-                viewBox="0 0 24 24"
-                width="36"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <line x1="5" x2="19" y1="12" y2="12"></line>
-              </svg>
-            </button>
-            <button
-              class="group flex size-56 items-center justify-center rounded-full bg-[var(--primary-color)] shadow-2xl shadow-[var(--primary-color)]/40 backdrop-blur-sm transition-all duration-300 hover:scale-105 active:scale-95"
-              id="increment"
-            >
-              <svg
-                class="text-white"
-                fill="none"
-                height="120"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="3"
-                viewBox="0 0 24 24"
-                width="120"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <line x1="12" x2="12" y1="5" y2="19"></line>
-                <line x1="5" x2="19" y1="12" y2="12"></line>
-              </svg>
-            </button>
-          </div>
-          <div class="mt-4 text-center">
-            <p class="text-base font-semibold text-[var(--muted-text-color)]">
-              Mala
-            </p>
-            <div
-              class="mx-auto mt-1 text-center text-4xl font-bold dark:text-gray-200"
-              id="mala-counter"
-            >
-              0
-            </div>
-          </div>
-        </div>
-      </main>
-      <footer class="absolute bottom-0 w-full pb-6 pt-4">
-        <div class="flex flex-col items-center justify-center gap-4">
-          <button
-            class="group flex items-center gap-3 rounded-full bg-white/10 dark:bg-zinc-800/50 px-6 py-3 text-base font-semibold shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20 dark:border-zinc-700/80"
-            id="reset-btn"
-          >
-            <svg
-              class="h-5 w-5 text-gray-700 dark:text-gray-100 transition-transform duration-500 ease-in-out group-hover:rotate-[-180deg]"
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
-              <path d="M12 4v8l4 2"></path>
-            </svg>
-            <span>Reset</span>
-          </button>
-          <p class="text-xs text-[var(--muted-text-color)] mt-4">
-            Tirth @2025 v1.0
-          </p>
-        </div>
-      </footer>
-    </div>
-    <div
-      class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm"
-      id="confirmation-dialog"
-    >
-      <div
-        class="w-full max-w-sm rounded-2xl bg-white/80 dark:bg-zinc-900/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-zinc-800"
-      >
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
-          Reset Counter
-        </h2>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Are you sure you want to reset the counter? This action cannot be
-          undone.
-        </p>
-        <div class="mt-6 flex justify-end space-x-3">
-          <button
-            class="rounded-lg bg-gray-200/80 dark:bg-zinc-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-zinc-600/80 active:scale-95"
-            id="cancel-reset"
-          >
-            Cancel
-          </button>
-          <button
-            class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 active:scale-95"
-            id="confirm-reset"
-          >
-            Reset
-          </button>
-        </div>
-      </div>
-    </div>
-    <div
-      class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm"
-      id="delete-confirmation-dialog"
-    >
-      <div
-        class="w-full max-w-sm rounded-2xl bg-white/80 dark:bg-zinc-900/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-zinc-800"
-      >
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
-          Delete Entry
-        </h2>
-        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-          Are you sure you want to permanently delete this history entry?
-        </p>
-        <div class="mt-6 flex justify-end space-x-3">
-          <button
-            class="rounded-lg bg-gray-200/80 dark:bg-zinc-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-zinc-600/80 active:scale-95"
-            id="cancel-delete"
-          >
-            Cancel
-          </button>
-          <button
-            class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 active:scale-95"
-            id="confirm-delete"
-          >
-            Delete
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="fixed inset-x-0 bottom-0 z-50 p-4" id="note-dialog">
-      <div
-        class="mx-auto w-full max-w-sm rounded-2xl bg-white/80 dark:bg-zinc-900/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-zinc-800"
-      >
-        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
-          Add a Note
-        </h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-          Optionally add a note for this count.
-        </p>
-        <div class="mt-4">
-          <input
-            class="w-full rounded-lg border-gray-300 dark:border-zinc-700 bg-white/70 dark:bg-zinc-800/70 text-gray-900 dark:text-white shadow-sm focus:border-[var(--primary-color)] focus:ring-[var(--primary-color)]"
-            id="note-input"
-            placeholder="e.g., Morning push-ups"
-            type="text"
-          />
-        </div>
-        <div class="mt-6 flex justify-end space-x-3">
-          <button
-            class="rounded-lg bg-gray-200/80 dark:bg-zinc-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-zinc-600/80 active:scale-95"
-            id="skip-note"
-          >
-            Skip
-          </button>
-          <button
-            class="rounded-lg bg-[var(--primary-color)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600 dark:hover:bg-amber-500 active:scale-95"
-            id="save-note"
-          >
-            Save
-          </button>
-        </div>
-      </div>
-    </div>
-    <div
-      class="fixed bottom-6 right-6 flex items-center gap-3 rounded-xl bg-green-500/90 px-4 py-3 text-white shadow-lg backdrop-blur-lg"
-      id="toast"
-    >
-      <svg
-        class="h-6 w-6 text-white"
-        fill="none"
-        stroke="currentColor"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-        <polyline points="22 4 12 14.01 9 11.01"></polyline>
-      </svg>
-      <span class="text-sm font-semibold">Count saved successfully!</span>
-    </div>
-    <script>
-      const counterValue = document.getElementById("counter-value");
-      const incrementBtn = document.getElementById("increment");
-      const decrementBtn = document.getElementById("decrement");
-      const resetBtn = document.getElementById("reset-btn");
-      const confirmationDialog = document.getElementById("confirmation-dialog");
-      const cancelResetBtn = document.getElementById("cancel-reset");
-      const confirmResetBtn = document.getElementById("confirm-reset");
-      const deleteConfirmationDialog = document.getElementById(
-        "delete-confirmation-dialog"
-      );
-      const cancelDeleteBtn = document.getElementById("cancel-delete");
-      const confirmDeleteBtn = document.getElementById("confirm-delete");
-      const toast = document.getElementById("toast");
-      const noteDialog = document.getElementById("note-dialog");
-      const noteInput = document.getElementById("note-input");
-      const saveNoteBtn = document.getElementById("save-note");
-      const skipNoteBtn = document.getElementById("skip-note");
-      const malaCounterEl = document.getElementById("mala-counter");
-      const themeMenuButton = document.getElementById("theme-menu-button");
-      const themeMenu = document.getElementById("theme-menu");
-      const themeButtons = document.querySelectorAll("[data-theme]");
-      const progressBar = document.getElementById("progress-bar");
-      const progressTextFg = document.getElementById("progress-text-fg");
-      const progressTextBg = document.getElementById("progress-text-bg");
-      const confettiContainer = document.getElementById("confetti-container");
-      const root = document.documentElement;
-      let count = 0;
-      let malaCount = 0;
-      let history = [];
-      let toastTimeout;
-      let tempCount;
-      let itemToDelete = null;
-      const triggerHapticFeedback = () => {
-        if (navigator.vibrate) {
-          navigator.vibrate(200); // Vibrate for 200ms
-        }
-      };
-      const createConfetti = () => {
-        for (let i = 0; i < 50; i++) {
-          const confetti = document.createElement("div");
-          confetti.classList.add("confetti");
-          confetti.style.left = `${Math.random() * 100}vw`;
-          confetti.style.animationDelay = `${Math.random() * 2}s`;
-          const primaryColor = getComputedStyle(document.documentElement)
-            .getPropertyValue("--primary-color")
-            .trim();
-          const colors = [primaryColor, "#fde047", "#a78bfa", "#f472b6"];
-          confetti.style.backgroundColor =
-            colors[Math.floor(Math.random() * colors.length)];
-          if (Math.random() > 0.5) {
-            confetti.style.borderRadius = "50%";
-          }
-          confettiContainer.appendChild(confetti);
-        }
-        setTimeout(() => {
-          confettiContainer.innerHTML = "";
-        }, 3000);
-      };
-      const applyTheme = (theme) => {
-        if (theme === "system") {
-          const prefersDark = window.matchMedia(
-            "(prefers-color-scheme: dark)"
-          ).matches;
-          document.documentElement.classList.toggle("dark", prefersDark);
-          localStorage.removeItem("theme");
-        } else {
-          document.documentElement.classList.toggle("dark", theme === "dark");
-          localStorage.setItem("theme", theme);
-        }
-      };
-      themeMenuButton.addEventListener("click", () => {
-        themeMenu.classList.toggle("hidden");
-      });
-      themeButtons.forEach((button) => {
-        button.addEventListener("click", () => {
-          const theme = button.dataset.theme;
-          applyTheme(theme);
-          themeMenu.classList.add("hidden");
-        });
-      });
-      document.addEventListener("click", (event) => {
-        if (
-          !themeMenuButton.contains(event.target) &&
-          !themeMenu.contains(event.target)
-        ) {
-          themeMenu.classList.add("hidden");
-        }
-      });
-      const savedTheme = localStorage.getItem("theme");
-      if (savedTheme) {
-        applyTheme(savedTheme);
-      } else {
-        applyTheme("system");
+<body class="bg-gray-100 dark:bg-gray-900">
+<div class="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-gradient-to-br from-[rgb(var(--background-start-rgb))] to-[rgb(var(--background-end-rgb))] text-[var(--text-color)]">
+<div class="pointer-events-none fixed inset-0 z-[100] overflow-hidden" id="confetti-container"></div>
+<header class="flex items-center justify-between p-4 sm:p-6">
+<h1 class="text-xl font-bold">Counter</h1>
+<div class="flex items-center gap-2">
+<div class="relative">
+<button class="group flex h-11 w-11 items-center justify-center rounded-full bg-white/10 dark:bg-gray-800/50 shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20 dark:border-gray-700/80" id="theme-menu-button">
+<svg class="h-5 w-5 text-gray-700 dark:text-gray-100 transition-colors" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+</svg>
+</button>
+<div aria-labelledby="theme-menu-button" aria-orientation="vertical" class="absolute right-0 mt-2 w-40 origin-top-right rounded-xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none hidden" id="theme-menu" role="menu">
+<div class="py-1" role="none">
+<button class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-700/50" data-theme="light">
+<svg fill="currentColor" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707z"></path>
+</svg> Light
+                            </button>
+<button class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-700/50" data-theme="dark">
+<svg fill="currentColor" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"></path>
+</svg> Dark
+                            </button>
+<button class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-700/50" data-theme="system">
+<svg fill="currentColor" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+<path d="M5 2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1H5V2zm1.5 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM5 1c-.552 0-1 .448-1 1v12c0 .552.448 1 1 1h6c.552 0 1-.448 1-1V2c0-.552-.448-1-1-1H5z"></path>
+</svg> System
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</header>
+<main class="flex flex-grow flex-col items-center justify-start px-4 pt-10 pb-16">
+<div class="flex w-full flex-col items-center justify-center">
+<div class="text-center">
+<p class="text-base font-semibold text-[var(--muted-text-color)]">Mala</p>
+<div class="mx-auto mt-1 text-center text-4xl font-bold text-[var(--text-color)]" id="mala-counter">0</div>
+</div>
+<div class="my-6 text-center">
+<span class="text-[140px] font-extrabold leading-none tracking-tighter text-[var(--text-color)] transition-all duration-300 ease-in-out" id="counter-value">0</span>
+</div>
+<div class="w-full max-w-sm px-4">
+<div class="relative h-6 w-full rounded-full bg-gray-200 dark:bg-gray-800 shadow-inner overflow-hidden">
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="progress-text-bg text-base font-bold" id="progress-text-bg">0%</span>
+</div>
+<div class="progress-bar-inner absolute left-0 top-0 h-full rounded-full bg-[var(--primary-color)]" id="progress-bar" style="width: 0%;">
+<div class="absolute inset-0 flex items-center justify-center overflow-hidden">
+<span class="progress-text-fg text-base font-bold" id="progress-text-fg">0%</span>
+</div>
+</div>
+</div>
+</div>
+<div class="my-8 flex w-full max-w-sm items-center justify-center gap-6">
+<button class="group flex size-24 items-center justify-center rounded-full bg-white/20 dark:bg-gray-800/60 shadow-lg backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/30 dark:border-gray-700" id="decrement">
+<svg class="text-gray-800 dark:text-gray-100" fill="none" height="36" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewBox="0 0 24 24" width="36" xmlns="http://www.w3.org/2000/svg">
+<line x1="5" x2="19" y1="12" y2="12"></line>
+</svg>
+</button>
+<button class="group flex size-56 items-center justify-center rounded-full bg-[var(--primary-color)] shadow-2xl shadow-[var(--primary-color)]/40 backdrop-blur-sm transition-all duration-300 hover:scale-105 active:scale-95" id="increment">
+<svg class="text-white" fill="none" height="120" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewBox="0 0 24 24" width="120" xmlns="http://www.w3.org/2000/svg">
+<line x1="12" x2="12" y1="5" y2="19"></line>
+<line x1="5" x2="19" y1="12" y2="12"></line>
+</svg>
+</button>
+</div>
+</div>
+</main>
+<footer class="absolute bottom-0 w-full pb-6 pt-4">
+<div class="flex flex-col items-center justify-center gap-4">
+<div class="flex items-center justify-center gap-2 rounded-full bg-white/10 dark:bg-gray-800/50 p-1 text-sm font-semibold shadow-sm backdrop-blur-lg border border-white/20 dark:border-gray-700/80">
+<button class="px-4 py-2 rounded-full transition-colors duration-300 tab-active" data-tab="counter" id="counter-tab-btn">Counter</button>
+<button class="px-4 py-2 rounded-full transition-colors duration-300 text-[var(--muted-text-color)]" data-tab="achievements" id="achievements-tab-btn">Achievements</button>
+</div>
+<button class="group flex items-center gap-3 rounded-full bg-white/10 dark:bg-gray-800/50 px-6 py-3 text-base font-semibold shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20 dark:border-gray-700/80" id="reset-btn">
+<svg class="h-5 w-5 text-gray-700 dark:text-gray-100 transition-transform duration-500 ease-in-out group-hover:rotate-[-180deg]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+<path d="M12 4v8l4 2"></path>
+</svg>
+<span>Reset</span>
+</button>
+<p class="text-xs text-[var(--muted-text-color)] mt-4">Tirth @2025 v1.0</p>
+</div>
+</footer>
+</div>
+<div class="fixed inset-0 z-40 flex flex-col items-center justify-end p-4 bg-black/30 backdrop-blur-sm hidden" id="achievements-panel">
+<div class="w-full max-w-lg h-[85dvh] rounded-t-3xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl shadow-2xl border-t border-x border-white/20 dark:border-gray-700/80">
+<div class="p-4 border-b border-gray-200/80 dark:border-gray-700/50 flex items-center justify-between sticky top-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-2xl z-10">
+<h2 class="text-xl font-bold">Achievements</h2>
+<button class="p-2 rounded-full hover:bg-gray-200/50 dark:hover:bg-gray-700/50" id="close-achievements-panel">
+<svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path></svg>
+</button>
+</div>
+<div class="p-6 space-y-4 overflow-y-auto h-[calc(85dvh-65px)]">
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M15.75 15.75l-2.489-2.489m0 0a3.375 3.375 0 10-4.773-4.773 3.375 3.375 0 004.774 4.774zM21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Novice Counter</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Reach a total count of 500.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 15.75h.008v.008H12v-.008z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Daily Devotee</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Use the app for 7 consecutive days.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 18.75h-9a9 9 0 119 0z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12.75 11.25v2.25-2.25zM12.75 9v.008h-.008V9h.008zm-2.242 3.75v.008h.008v-.008h-.008zM15 11.25h.008v.008H15v-.008zm2.25-2.25h.008v.008h-.008V9zm-4.5 4.5v.008h.008v-.008h-.008zM12.75 15.75h.008v.008h-.008v-.008zM10.5 13.5v.008h.008v-.008h-.008zm-2.25-2.25h.008v.008H8.25v-.008zM9.75 9h.008v.008H9.75V9z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Mala Master</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Complete 10 malas.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Speedy Spinner</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Complete a mala within 24 hours.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Night কাউન્ટer</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Count at night (12 AM - 4 AM).</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Weekend Warrior</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Achieve a high count over a weekend.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6-2.292m0 0v14.25m0-14.25c-2.305 0-4.408.867-6 2.292m6-2.292c2.305 0 4.408.867 6 2.292" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Dedicated Dozen</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Complete 12 malas.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 00-.182.557l1.285 5.385a.562.562 0 01-.84.61l-4.725-2.885a.563.563 0 00-.586 0L6.982 21.54a.562.562 0 01-.84-.61l1.285-5.386a.562.562 0 00-.182-.557l-4.204-3.602a.563.563 0 01.321-.988l5.518-.442a.563.563 0 00.475-.345L11.48 3.5z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Monthly Milestone</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Reach a total count of 5,000 in a month.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Streak of Success</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Use the app for 30 consecutive days.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0h18M12 12.75h.008v.008H12v-.008zm0 3h.008v.008H12v-.008zm0-6h.008v.008H12V9.75z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Perfect Weekender</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Achieve high counts on 4 weekends in a row.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Sunrise Counter</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Count during sunrise (6 AM - 8 AM) for 10 days.</p>
+</div>
+<div class="flex flex-col items-center text-center gap-2 p-4 rounded-xl bg-gray-100/50 dark:bg-gray-900/40 border border-gray-200 dark:border-gray-700/60 opacity-50">
+<div class="w-16 h-16 flex-shrink-0 flex items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700 text-gray-500">
+<svg class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4.098 19.902a3.75 3.75 0 005.304 0l6.401-6.402a3.75 3.75 0 00-.625-6.25l-6.402-6.401a3.75 3.75 0 00-5.304 0l-1.902 1.902a3.75 3.75 0 000 5.304l3.202 3.201-3.202 3.202a3.75 3.75 0 000 5.304l1.902 1.902z" stroke-linecap="round" stroke-linejoin="round"></path><path d="M12.75 19.5l4.5-4.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+</div>
+<h4 class="font-bold text-base">Explorer</h4>
+<p class="text-xs text-[var(--muted-text-color)]">Use the app's theme changer to try all available themes.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 backdrop-blur-sm" id="confirmation-dialog">
+<div class="w-full max-w-sm rounded-2xl bg-white/80 dark:bg-gray-800/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-gray-700">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white">Reset Counter</h2>
+<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Are you sure you want to reset the counter? This action cannot be undone.</p>
+<div class="mt-6 flex justify-end space-x-3">
+<button class="rounded-lg bg-gray-200/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-gray-600/80 active:scale-95" id="cancel-reset">Cancel</button>
+<button class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 active:scale-95" id="confirm-reset">Reset</button>
+</div>
+</div>
+</div>
+<div class="fixed inset-0 z-50 flex items-end justify-center bg-black/50 p-4 backdrop-blur-sm" id="delete-confirmation-dialog">
+<div class="w-full max-w-sm rounded-2xl bg-white/80 dark:bg-gray-800/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-gray-700">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white">Delete Entry</h2>
+<p class="mt-2 text-sm text-gray-600 dark:text-gray-400">Are you sure you want to permanently delete this history entry?</p>
+<div class="mt-6 flex justify-end space-x-3">
+<button class="rounded-lg bg-gray-200/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-gray-600/80 active:scale-95" id="cancel-delete">Cancel</button>
+<button class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 active:scale-95" id="confirm-delete">Delete</button>
+</div>
+</div>
+</div>
+<div class="fixed inset-x-0 bottom-0 z-50 p-4" id="note-dialog">
+<div class="mx-auto w-full max-w-sm rounded-2xl bg-white/80 dark:bg-gray-800/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-gray-700">
+<h2 class="text-lg font-bold text-gray-900 dark:text-white">Add a Note</h2>
+<p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Optionally add a note for this count.</p>
+<div class="mt-4">
+<input class="w-full rounded-lg border-gray-300 dark:border-gray-600 bg-white/70 dark:bg-gray-700/70 text-gray-900 dark:text-white shadow-sm focus:border-[var(--primary-color)] focus:ring-[var(--primary-color)]" id="note-input" placeholder="e.g., Morning push-ups" type="text"/>
+</div>
+<div class="mt-6 flex justify-end space-x-3">
+<button class="rounded-lg bg-gray-200/80 dark:bg-gray-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-gray-600/80 active:scale-95" id="skip-note">Skip</button>
+<button class="rounded-lg bg-[var(--primary-color)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600 dark:hover:bg-amber-500 active:scale-95" id="save-note">Save</button>
+</div>
+</div>
+</div>
+<div class="fixed bottom-6 right-6 flex items-center gap-3 rounded-xl bg-green-500/90 px-4 py-3 text-white shadow-lg backdrop-blur-lg" id="toast">
+<svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+<polyline points="22 4 12 14.01 9 11.01"></polyline>
+</svg>
+<span class="text-sm font-semibold">Count saved successfully!</span>
+</div>
+<script>
+    const counterValue = document.getElementById('counter-value');
+    const incrementBtn = document.getElementById('increment');
+    const decrementBtn = document.getElementById('decrement');
+    const resetBtn = document.getElementById('reset-btn');
+    const confirmationDialog = document.getElementById('confirmation-dialog');
+    const cancelResetBtn = document.getElementById('cancel-reset');
+    const confirmResetBtn = document.getElementById('confirm-reset');
+    const deleteConfirmationDialog = document.getElementById('delete-confirmation-dialog');
+    const cancelDeleteBtn = document.getElementById('cancel-delete');
+    const confirmDeleteBtn = document.getElementById('confirm-delete');
+    const toast = document.getElementById('toast');
+    const noteDialog = document.getElementById('note-dialog');
+    const noteInput = document.getElementById('note-input');
+    const saveNoteBtn = document.getElementById('save-note');
+    const skipNoteBtn = document.getElementById('skip-note');
+    const malaCounterEl = document.getElementById('mala-counter');
+    const themeMenuButton = document.getElementById('theme-menu-button');
+    const themeMenu = document.getElementById('theme-menu');
+    const themeButtons = document.querySelectorAll('[data-theme]');
+    const progressBar = document.getElementById('progress-bar');
+    const progressTextFg = document.getElementById('progress-text-fg');
+    const progressTextBg = document.getElementById('progress-text-bg');
+    const confettiContainer = document.getElementById('confetti-container');
+    const root = document.documentElement;
+    const achievementsTabBtn = document.getElementById('achievements-tab-btn');
+    const counterTabBtn = document.getElementById('counter-tab-btn');
+    const achievementsPanel = document.getElementById('achievements-panel');
+    const closeAchievementsPanelBtn = document.getElementById('close-achievements-panel');
+    const mainContent = document.querySelector('main');
+    const headerContent = document.querySelector('header');
+    let count = 0;
+    let malaCount = 0;
+    let history = [];
+    let toastTimeout;
+    let tempCount;
+    let itemToDelete = null;
+    const triggerHapticFeedback = () => {
+      if (navigator.vibrate) {
+        navigator.vibrate(200); // Vibrate for 200ms
       }
-      window
-        .matchMedia("(prefers-color-scheme: dark)")
-        .addEventListener("change", (e) => {
-          if (!localStorage.getItem("theme")) {
-            applyTheme("system");
-          }
-        });
-      const updateProgress = () => {
-        const percentage = Math.min(100, Math.round((count / 108) * 100));
-        progressBar.style.width = `${percentage}%`;
-        progressTextFg.textContent = `${percentage}%`;
-        progressTextBg.textContent = `${percentage}%`;
-        if (count === 108) {
-          progressBar.classList.add("animate-pulse");
-        } else {
-          progressBar.classList.remove("animate-pulse");
+    };
+    const createConfetti = () => {
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.classList.add('confetti');
+        confetti.style.left = `${Math.random() * 100}vw`;
+        confetti.style.animationDelay = `${Math.random() * 2}s`;
+        const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary-color').trim();
+        const colors = [primaryColor, '#fde047', '#a78bfa', '#f472b6'];
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        if (Math.random() > 0.5) {
+          confetti.style.borderRadius = '50%';
         }
-      };
-      const updateCounter = () => {
-        counterValue.textContent = count;
-        malaCounterEl.textContent = malaCount;
-        updateProgress();
-      };
-      const showToast = () => {
-        clearTimeout(toastTimeout);
-        toast.classList.add("show");
-        toastTimeout = setTimeout(() => {
-          toast.classList.remove("show");
-        }, 3000);
-      };
-      const addToHistory = (newCount, note = "") => {
-        const timestamp = new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
-        history.unshift({
-          id: Date.now(),
-          count: newCount,
-          timestamp,
-          note,
-        });
-        if (history.length > 10) {
-          history.pop();
-        }
-      };
-      window.promptDeleteHistoryItem = (id) => {
-        itemToDelete = id;
-        deleteConfirmationDialog.classList.add("show");
-      };
-      const deleteHistoryItem = (id) => {
-        history = history.filter((item) => item.id !== id);
-      };
-      cancelDeleteBtn.addEventListener("click", () => {
+        confettiContainer.appendChild(confetti);
+      }
+      setTimeout(() => {
+        confettiContainer.innerHTML = '';
+      }, 3000);
+    };
+    const applyTheme = (theme) => {
+      if (theme === 'system') {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.toggle('dark', prefersDark);
+        localStorage.removeItem('theme');
+      } else {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        localStorage.setItem('theme', theme);
+      }
+    };
+    themeMenuButton.addEventListener('click', () => {
+      themeMenu.classList.toggle('hidden');
+    });
+    themeButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const theme = button.dataset.theme;
+        applyTheme(theme);
+        themeMenu.classList.add('hidden');
+      });
+    });
+    document.addEventListener('click', (event) => {
+      if (!themeMenuButton.contains(event.target) && !themeMenu.contains(event.target)) {
+        themeMenu.classList.add('hidden');
+      }
+    });
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      applyTheme(savedTheme);
+    } else {
+      applyTheme('system');
+    }
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (!localStorage.getItem('theme')) {
+        applyTheme('system');
+      }
+    });
+    const updateProgress = () => {
+      const percentage = Math.min(100, Math.round((count % 108 / 108) * 100));
+      progressBar.style.width = `${percentage}%`;
+      progressTextFg.textContent = `${percentage}%`;
+      progressTextBg.textContent = `${percentage}%`;
+      if (count % 108 === 0 && count > 0) {
+        progressBar.classList.add('animate-pulse');
+      } else {
+        progressBar.classList.remove('animate-pulse');
+      }
+    };
+    const updateCounter = () => {
+      counterValue.textContent = count % 108;
+      malaCounterEl.textContent = malaCount;
+      updateProgress();
+    };
+    const showToast = () => {
+      clearTimeout(toastTimeout);
+      toast.classList.add('show');
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    };
+    const addToHistory = (newCount, note = '') => {
+      const timestamp = new Date().toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      history.unshift({
+        id: Date.now(),
+        count: newCount,
+        timestamp,
+        note
+      });
+      if (history.length > 10) {
+        history.pop();
+      }
+    };
+    window.promptDeleteHistoryItem = (id) => {
+      itemToDelete = id;
+      deleteConfirmationDialog.classList.add('show');
+    };
+    const deleteHistoryItem = (id) => {
+      history = history.filter(item => item.id !== id);
+    };
+    cancelDeleteBtn.addEventListener('click', () => {
+      itemToDelete = null;
+      deleteConfirmationDialog.classList.remove('show');
+    });
+    confirmDeleteBtn.addEventListener('click', () => {
+      if (itemToDelete !== null) {
+        deleteHistoryItem(itemToDelete);
         itemToDelete = null;
-        deleteConfirmationDialog.classList.remove("show");
-      });
-      confirmDeleteBtn.addEventListener("click", () => {
-        if (itemToDelete !== null) {
-          deleteHistoryItem(itemToDelete);
-          itemToDelete = null;
-          deleteConfirmationDialog.classList.remove("show");
-        }
-      });
-      const showNoteDialog = () => {
-        noteDialog.classList.add("show");
-      };
-      const hideNoteDialog = () => {
-        noteDialog.classList.remove("show");
-        noteInput.value = "";
-      };
-      incrementBtn.addEventListener("click", () => {
+        deleteConfirmationDialog.classList.remove('show');
+      }
+    });
+    const showNoteDialog = () => {
+      noteDialog.classList.add('show');
+    };
+    const hideNoteDialog = () => {
+      noteDialog.classList.remove('show');
+      noteInput.value = '';
+    };
+    incrementBtn.addEventListener('click', () => {
         count++;
-        if (count > 108) count = 108;
-        updateCounter();
-        if (count === 108) {
-          triggerHapticFeedback();
-          createConfetti();
-          counterValue.classList.add(
-            "scale-125",
-            "text-[var(--primary-color)]"
-          );
-          setTimeout(() => {
-            count = 0;
+        if (count % 108 === 0 && count > 0) {
+            triggerHapticFeedback();
+            createConfetti();
+            counterValue.classList.add('scale-125', 'text-[var(--primary-color)]');
             malaCount++;
-            addToHistory(108, "Mala completed");
-            showToast();
-            updateCounter();
-            counterValue.classList.remove(
-              "scale-125",
-              "text-[var(--primary-color)]"
-            );
-          }, 1200);
+            setTimeout(() => {
+                addToHistory(108, 'Mala completed');
+                showToast();
+                updateCounter();
+                 counterValue.classList.remove('scale-125', 'text-[var(--primary-color)]');
+            }, 1200);
         }
-      });
-      decrementBtn.addEventListener("click", () => {
-        if (count > 0) {
-          count--;
-          updateCounter();
-        }
-      });
-      saveNoteBtn.addEventListener("click", () => {
-        addToHistory(tempCount, noteInput.value.trim());
-        hideNoteDialog();
-        showToast();
-      });
-      skipNoteBtn.addEventListener("click", () => {
-        addToHistory(tempCount);
-        hideNoteDialog();
-        showToast();
-      });
-      resetBtn.addEventListener("click", () => {
-        confirmationDialog.classList.add("show");
-      });
-      cancelResetBtn.addEventListener("click", () => {
-        confirmationDialog.classList.remove("show");
-      });
-      confirmResetBtn.addEventListener("click", () => {
-        count = 0;
-        malaCount = 0;
         updateCounter();
-        addToHistory(0, "Counter Reset");
-        confirmationDialog.classList.remove("show");
-      });
-      // Initialize with some dummy history for better visual representation
-      history = [
-        { id: 1, count: 25, timestamp: "10:15 AM", note: "Morning meditation" },
-        { id: 2, count: 50, timestamp: "01:30 PM", note: "Post-lunch chant" },
-        {
-          id: 3,
-          count: 108,
-          timestamp: "06:00 PM",
-          note: "Evening reflection",
-        },
-      ];
+    });
+    decrementBtn.addEventListener('click', () => {
+      if (count > 0) {
+        count--;
+        updateCounter();
+      }
+    });
+    saveNoteBtn.addEventListener('click', () => {
+      addToHistory(tempCount, noteInput.value.trim());
+      hideNoteDialog();
+      showToast();
+    });
+    skipNoteBtn.addEventListener('click', () => {
+      addToHistory(tempCount);
+      hideNoteDialog();
+      showToast();
+    });
+    resetBtn.addEventListener('click', () => {
+      confirmationDialog.classList.add('show');
+    });
+    cancelResetBtn.addEventListener('click', () => {
+      confirmationDialog.classList.remove('show');
+    });
+    confirmResetBtn.addEventListener('click', () => {
+      count = 0;
+      malaCount = 0;
       updateCounter();
-    </script>
-  </body>
-</html>
+      addToHistory(0, 'Counter Reset');
+      confirmationDialog.classList.remove('show');
+    });
+    // Tab switching logic
+    const showAchievements = () => {
+      achievementsPanel.classList.remove('hidden');
+      mainContent.classList.add('opacity-0', 'pointer-events-none');
+      headerContent.classList.add('opacity-0', 'pointer-events-none');
+      achievementsTabBtn.classList.add('tab-active');
+      achievementsTabBtn.classList.remove('text-[var(--muted-text-color)]')
+      counterTabBtn.classList.remove('tab-active');
+      counterTabBtn.classList.add('text-[var(--muted-text-color)]')
+    }
+    const showCounter = () => {
+      achievementsPanel.classList.add('hidden');
+      mainContent.classList.remove('opacity-0', 'pointer-events-none');
+      headerContent.classList.remove('opacity-0', 'pointer-events-none');
+      counterTabBtn.classList.add('tab-active');
+      counterTabBtn.classList.remove('text-[var(--muted-text-color)]')
+      achievementsTabBtn.classList.remove('tab-active');
+      achievementsTabBtn.classList.add('text-[var(--muted-text-color)]')
+    }
+    achievementsTabBtn.addEventListener('click', showAchievements);
+    counterTabBtn.addEventListener('click', showCounter);
+    closeAchievementsPanelBtn.addEventListener('click', showCounter);
+    // Initialize with some dummy history for better visual representation
+    history = [{
+      id: 1,
+      count: 25,
+      timestamp: '10:15 AM',
+      note: 'Morning meditation'
+    }, {
+      id: 2,
+      count: 50,
+      timestamp: '01:30 PM',
+      note: 'Post-lunch chant'
+    }, {
+      id: 3,
+      count: 108,
+      timestamp: '06:00 PM',
+      note: 'Evening reflection'
+    }, ];
+    updateCounter();
+  </script>
+</body></html>
