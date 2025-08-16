@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Counter</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@200;300;400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <style type="text/tailwindcss">
+      :root {
+        --primary-color: #0d7ff2;
+        --background-start-rgb: 243, 244, 246;
+        --background-end-rgb: 229, 231, 235;
+        --text-color: #1f2937;
+        --muted-text-color: #6b7280;
+        --card-bg: 255, 255, 255;
+        --progress-text-color: #ffffff;
+        --progress-text-color-dark: #1f2937;
+      }
+      .dark {
+        --primary-color: #f59e0b;
+        --background-start-rgb: 12, 10, 9;
+        --background-end-rgb: 39, 39, 42;
+        --text-color: #f3f4f6;
+        --muted-text-color: #a1a1aa;
+        --card-bg: 24, 24, 27;
+        --progress-text-color: #000000;
+        --progress-text-color-dark: #f3f4f6;
+      }
+      body {
+        font-family: "Manrope", sans-serif;
+        min-height: 100dvh;
+        color: var(--text-color);
+        background-color: rgb(var(--background-start-rgb));
+      }
+      #history-section {
+        max-height: 500px;
+        opacity: 1;
+        transform: translateY(0);
+        transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out,
+          transform 0.5s ease-in-out, margin-top 0.5s ease-in-out;
+        overflow: hidden;
+      }
+      #history-section.hidden {
+        max-height: 0;
+        opacity: 0;
+        transform: translateY(-1rem);
+        margin-top: 0 !important;
+      }
+      #toast {
+        transform: translateY(150%);
+        transition: transform 0.5s ease-in-out;
+      }
+      #toast.show {
+        transform: translateY(0);
+      }
+      #note-dialog,
+      #confirmation-dialog,
+      #delete-confirmation-dialog {
+        transform: translateY(100%);
+        transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+        opacity: 0;
+        pointer-events: none;
+      }
+      #note-dialog.show,
+      #confirmation-dialog.show,
+      #delete-confirmation-dialog.show {
+        transform: translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .progress-bar-inner {
+        transition: width 0.3s ease-in-out;
+      }
+      @keyframes confetti-fall {
+        0% {
+          transform: translateY(-100vh) rotate(0deg);
+        }
+        100% {
+          transform: translateY(100vh) rotate(720deg);
+        }
+      }
+      .confetti {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 10px;
+        height: 10px;
+        background-color: var(--primary-color);
+        opacity: 0.8;
+        pointer-events: none;
+        animation: confetti-fall 3s linear infinite;
+        z-index: 100;
+      }
+      .progress-text-bg {
+        color: var(--progress-text-color-dark);
+      }
+      .progress-text-fg {
+        color: var(--progress-text-color);
+      }
+      .dark .progress-text-fg {
+        color: var(--progress-text-color);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+    <style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100 dark:bg-stone-900">
+    <div
+      class="relative flex size-full min-h-screen flex-col overflow-x-hidden bg-gradient-to-br from-[rgb(var(--background-start-rgb))] to-[rgb(var(--background-end-rgb))] text-[var(--text-color)]"
+    >
+      <div
+        class="pointer-events-none fixed inset-0 z-[100] overflow-hidden"
+        id="confetti-container"
+      ></div>
+      <header class="flex items-center justify-between p-4 sm:p-6">
+        <h1 class="text-xl font-bold">Counter</h1>
+        <div class="flex items-center gap-2">
+          <div class="relative">
+            <button
+              class="group flex h-11 w-11 items-center justify-center rounded-full bg-white/10 dark:bg-zinc-800/50 shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20 dark:border-zinc-700/80"
+              id="theme-menu-button"
+            >
+              <svg
+                class="h-5 w-5 text-gray-700 dark:text-gray-300 transition-colors"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"
+                ></path>
+              </svg>
+            </button>
+            <div
+              aria-labelledby="theme-menu-button"
+              aria-orientation="vertical"
+              class="absolute right-0 mt-2 w-40 origin-top-right rounded-xl bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl shadow-lg ring-1 ring-black/5 dark:ring-white/10 focus:outline-none hidden"
+              id="theme-menu"
+              role="menu"
+            >
+              <div class="py-1" role="none">
+                <button
+                  class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50"
+                  data-theme="light"
+                >
+                  <svg
+                    fill="currentColor"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707z"
+                    ></path>
+                  </svg>
+                  Light
+                </button>
+                <button
+                  class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50"
+                  data-theme="dark"
+                >
+                  <svg
+                    fill="currentColor"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"
+                    ></path>
+                  </svg>
+                  Dark
+                </button>
+                <button
+                  class="flex w-full items-center gap-3 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-zinc-800/50"
+                  data-theme="system"
+                >
+                  <svg
+                    fill="currentColor"
+                    height="16"
+                    viewBox="0 0 16 16"
+                    width="16"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M5 2a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1H5V2zm1.5 3a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1h-3zM5 1c-.552 0-1 .448-1 1v12c0 .552.448 1 1 1h6c.552 0 1-.448 1-1V2c0-.552-.448-1-1-1H5z"
+                    ></path>
+                  </svg>
+                  System
+                </button>
+              </div>
+            </div>
+          </div>
+          <button
+            class="group flex h-11 w-11 items-center justify-center rounded-full bg-white/10 dark:bg-zinc-800/50 shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20 dark:border-zinc-700/80"
+            id="save-btn"
+          >
+            <svg
+              class="h-5 w-5 text-gray-700 dark:text-gray-300"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+              ></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline>
+            </svg>
+          </button>
+          <button
+            class="group flex items-center gap-2 rounded-full bg-white/10 dark:bg-zinc-800/50 px-4 py-2.5 text-sm font-semibold shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 text-gray-700 dark:text-gray-200 border border-white/20 dark:border-zinc-700/80"
+            id="toggle-history"
+          >
+            <svg
+              class="text-gray-700 dark:text-gray-300"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M1 4v6h6"></path>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            <span class="dark:text-gray-200">History</span>
+          </button>
+        </div>
+      </header>
+      <main
+        class="flex flex-grow flex-col items-center justify-center px-4 pb-16"
+      >
+        <div class="flex w-full flex-col items-center justify-center">
+          <div class="w-full max-w-sm" id="history-section-container">
+            <div
+              class="mt-0 hidden w-full max-w-sm overflow-hidden"
+              id="history-section"
+            >
+              <div
+                class="rounded-2xl bg-[rgba(var(--card-bg),0.7)] dark:bg-[rgba(var(--card-bg),0.5)] p-4 backdrop-blur-xl shadow-lg border border-white/20 dark:border-zinc-800"
+              >
+                <div class="mb-4 flex items-center justify-between">
+                  <h3 class="text-lg font-bold">History</h3>
+                  <button
+                    class="text-sm font-semibold text-red-500 transition-colors hover:text-red-600 dark:hover:text-red-400"
+                    id="clear-history"
+                  >
+                    Clear
+                  </button>
+                </div>
+                <ul
+                  class="max-h-60 space-y-2 overflow-y-auto pr-1"
+                  id="history-list"
+                ></ul>
+                <p
+                  class="mt-4 hidden text-center text-sm text-[var(--muted-text-color)]"
+                  id="no-history"
+                >
+                  No history yet.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="my-8 text-center">
+            <span
+              class="text-[140px] font-extrabold leading-none tracking-tighter transition-all duration-300 ease-in-out"
+              id="counter-value"
+              >0</span
+            >
+          </div>
+          <div class="w-full max-w-sm px-4">
+            <div
+              class="relative h-3.5 w-full rounded-full bg-gray-200 dark:bg-zinc-800 shadow-inner overflow-hidden"
+            >
+              
+              <div
+                class="progress-bar-inner absolute left-0 top-0 h-full rounded-full bg-[var(--primary-color)]"
+                id="progress-bar"
+                style="width: 0%"
+              >
+                <div
+                  class="absolute inset-0 flex items-center justify-center overflow-hidden"
+                >
+                  <span
+                    class="progress-text-fg text-xs font-bold"
+                    id="progress-text-fg"
+                    >0%</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="my-10 flex w-full max-w-sm items-center justify-center gap-6"
+          >
+            <button
+              class="group flex size-24 items-center justify-center rounded-full bg-white/20 dark:bg-zinc-800/60 shadow-lg backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/30 dark:border-zinc-700"
+              id="decrement"
+            >
+              <svg
+                class="text-gray-800 dark:text-gray-100"
+                fill="none"
+                height="36"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3"
+                viewBox="0 0 24 24"
+                width="36"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <line x1="5" x2="19" y1="12" y2="12"></line>
+              </svg>
+            </button>
+            <button
+              class="group flex size-44 items-center justify-center rounded-full bg-[var(--primary-color)] shadow-2xl shadow-[var(--primary-color)]/40 backdrop-blur-sm transition-all duration-300 hover:scale-105 active:scale-95"
+              id="increment"
+            >
+              <svg
+                class="text-white"
+                fill="none"
+                height="96"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="3"
+                viewBox="0 0 24 24"
+                width="96"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <line x1="12" x2="12" y1="5" y2="19"></line>
+                <line x1="5" x2="19" y1="12" y2="12"></line>
+              </svg>
+            </button>
+          </div>
+          <div class="mt-4 text-center">
+            <p class="text-base font-semibold text-[var(--muted-text-color)]">
+              Mala
+            </p>
+            <div
+              class="mx-auto mt-1 text-center text-4xl font-bold dark:text-gray-200"
+              id="mala-counter"
+            >
+              0
+            </div>
+          </div>
+        </div>
+      </main>
+      <footer class="absolute bottom-0 w-full pb-6 pt-4">
+        <div class="flex flex-col items-center justify-center gap-4">
+          <button
+            class="group flex items-center gap-3 rounded-full bg-white/10 dark:bg-zinc-800/50 px-6 py-3 text-base font-semibold shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20 dark:border-zinc-700/80"
+            id="reset-btn"
+          >
+            <svg
+              class="h-5 w-5 text-gray-700 dark:text-gray-300 transition-transform duration-500 ease-in-out group-hover:rotate-[-180deg]"
+              fill="none"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M21 12a9 9 0 1 1-6.219-8.56"></path>
+              <path d="M12 4v8l4 2"></path>
+            </svg>
+            <span>Reset</span>
+          </button>
+          <p class="text-xs text-[var(--muted-text-color)] mt-4">
+            Tirth @2025 V1.0
+          </p>
+        </div>
+      </footer>
+    </div>
+    <div
+      class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm"
+      id="confirmation-dialog"
+    >
+      <div
+        class="w-full max-w-sm rounded-2xl bg-white/80 dark:bg-zinc-900/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-zinc-800"
+      >
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+          Reset Counter
+        </h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          Are you sure you want to reset the counter? This action cannot be
+          undone.
+        </p>
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            class="rounded-lg bg-gray-200/80 dark:bg-zinc-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-zinc-600/80 active:scale-95"
+            id="cancel-reset"
+          >
+            Cancel
+          </button>
+          <button
+            class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 active:scale-95"
+            id="confirm-reset"
+          >
+            Reset
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4 backdrop-blur-sm"
+      id="delete-confirmation-dialog"
+    >
+      <div
+        class="w-full max-w-sm rounded-2xl bg-white/80 dark:bg-zinc-900/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-zinc-800"
+      >
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+          Delete Entry
+        </h2>
+        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          Are you sure you want to permanently delete this history entry?
+        </p>
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            class="rounded-lg bg-gray-200/80 dark:bg-zinc-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-zinc-600/80 active:scale-95"
+            id="cancel-delete"
+          >
+            Cancel
+          </button>
+          <button
+            class="rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700 active:scale-95"
+            id="confirm-delete"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="fixed inset-x-0 bottom-0 z-50 p-4" id="note-dialog">
+      <div
+        class="mx-auto w-full max-w-sm rounded-2xl bg-white/80 dark:bg-zinc-900/80 p-6 shadow-2xl backdrop-blur-2xl border border-white/20 dark:border-zinc-800"
+      >
+        <h2 class="text-lg font-bold text-gray-900 dark:text-white">
+          Add a Note
+        </h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+          Optionally add a note for this count.
+        </p>
+        <div class="mt-4">
+          <input
+            class="w-full rounded-lg border-gray-300 dark:border-zinc-700 bg-white/70 dark:bg-zinc-800/70 text-gray-900 dark:text-white shadow-sm focus:border-[var(--primary-color)] focus:ring-[var(--primary-color)]"
+            id="note-input"
+            placeholder="e.g., Morning push-ups"
+            type="text"
+          />
+        </div>
+        <div class="mt-6 flex justify-end space-x-3">
+          <button
+            class="rounded-lg bg-gray-200/80 dark:bg-zinc-700/80 px-4 py-2 text-sm font-semibold text-gray-800 dark:text-gray-200 transition-colors hover:bg-gray-300/80 dark:hover:bg-zinc-600/80 active:scale-95"
+            id="skip-note"
+          >
+            Skip
+          </button>
+          <button
+            class="rounded-lg bg-[var(--primary-color)] px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-600 dark:hover:bg-amber-500 active:scale-95"
+            id="save-note"
+          >
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="fixed bottom-6 right-6 flex items-center gap-3 rounded-xl bg-green-500/90 px-4 py-3 text-white shadow-lg backdrop-blur-lg"
+      id="toast"
+    >
+      <svg
+        class="h-6 w-6 text-white"
+        fill="none"
+        stroke="currentColor"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        stroke-width="2"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+      <span class="text-sm font-semibold">Count saved successfully!</span>
+    </div>
+    <script>
+      const counterValue = document.getElementById("counter-value");
+      const incrementBtn = document.getElementById("increment");
+      const decrementBtn = document.getElementById("decrement");
+      const resetBtn = document.getElementById("reset-btn");
+      const saveBtn = document.getElementById("save-btn");
+      const confirmationDialog = document.getElementById("confirmation-dialog");
+      const cancelResetBtn = document.getElementById("cancel-reset");
+      const confirmResetBtn = document.getElementById("confirm-reset");
+      const deleteConfirmationDialog = document.getElementById(
+        "delete-confirmation-dialog"
+      );
+      const cancelDeleteBtn = document.getElementById("cancel-delete");
+      const confirmDeleteBtn = document.getElementById("confirm-delete");
+      const toggleHistoryBtn = document.getElementById("toggle-history");
+      const historySection = document.getElementById("history-section");
+      const historyList = document.getElementById("history-list");
+      const clearHistoryBtn = document.getElementById("clear-history");
+      const noHistoryMsg = document.getElementById("no-history");
+      const toast = document.getElementById("toast");
+      const noteDialog = document.getElementById("note-dialog");
+      const noteInput = document.getElementById("note-input");
+      const saveNoteBtn = document.getElementById("save-note");
+      const skipNoteBtn = document.getElementById("skip-note");
+      const malaCounterEl = document.getElementById("mala-counter");
+      const themeMenuButton = document.getElementById("theme-menu-button");
+      const themeMenu = document.getElementById("theme-menu");
+      const themeButtons = document.querySelectorAll("[data-theme]");
+      const progressBar = document.getElementById("progress-bar");
+      const progressTextFg = document.getElementById("progress-text-fg");
+      const progressTextBg = document.getElementById("progress-text-bg");
+      const confettiContainer = document.getElementById("confetti-container");
+      const root = document.documentElement;
+      let count = 0;
+      let malaCount = 0;
+      let history = [];
+      let toastTimeout;
+      let tempCount;
+      let itemToDelete = null;
+      const createConfetti = () => {
+        for (let i = 0; i < 50; i++) {
+          const confetti = document.createElement("div");
+          confetti.classList.add("confetti");
+          confetti.style.left = `${Math.random() * 100}vw`;
+          confetti.style.animationDelay = `${Math.random() * 2}s`;
+          const primaryColor = getComputedStyle(document.documentElement)
+            .getPropertyValue("--primary-color")
+            .trim();
+          const colors = [primaryColor, "#fde047", "#a78bfa", "#f472b6"];
+          confetti.style.backgroundColor =
+            colors[Math.floor(Math.random() * colors.length)];
+          if (Math.random() > 0.5) {
+            confetti.style.borderRadius = "50%";
+          }
+          confettiContainer.appendChild(confetti);
+        }
+        setTimeout(() => {
+          confettiContainer.innerHTML = "";
+        }, 3000);
+      };
+      const applyTheme = (theme) => {
+        if (theme === "system") {
+          const prefersDark = window.matchMedia(
+            "(prefers-color-scheme: dark)"
+          ).matches;
+          document.documentElement.classList.toggle("dark", prefersDark);
+          localStorage.removeItem("theme");
+        } else {
+          document.documentElement.classList.toggle("dark", theme === "dark");
+          localStorage.setItem("theme", theme);
+        }
+      };
+      themeMenuButton.addEventListener("click", () => {
+        themeMenu.classList.toggle("hidden");
+      });
+      themeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const theme = button.dataset.theme;
+          applyTheme(theme);
+          themeMenu.classList.add("hidden");
+        });
+      });
+      document.addEventListener("click", (event) => {
+        if (
+          !themeMenuButton.contains(event.target) &&
+          !themeMenu.contains(event.target)
+        ) {
+          themeMenu.classList.add("hidden");
+        }
+      });
+      const savedTheme = localStorage.getItem("theme");
+      if (savedTheme) {
+        applyTheme(savedTheme);
+      } else {
+        applyTheme("system");
+      }
+      window
+        .matchMedia("(prefers-color-scheme: dark)")
+        .addEventListener("change", (e) => {
+          if (!localStorage.getItem("theme")) {
+            applyTheme("system");
+          }
+        });
+      const updateProgress = () => {
+        const percentage = Math.min(100, Math.round((count / 108) * 100));
+        progressBar.style.width = `${percentage}%`;
+        progressTextFg.textContent = `${percentage}%`;
+        progressTextBg.textContent = `${percentage}%`;
+        if (count === 108) {
+          progressBar.classList.add("animate-pulse");
+        } else {
+          progressBar.classList.remove("animate-pulse");
+        }
+      };
+      const updateCounter = () => {
+        counterValue.textContent = count;
+        malaCounterEl.textContent = malaCount;
+        updateProgress();
+      };
+      const showToast = () => {
+        clearTimeout(toastTimeout);
+        toast.classList.add("show");
+        toastTimeout = setTimeout(() => {
+          toast.classList.remove("show");
+        }, 3000);
+      };
+      const addToHistory = (newCount, note = "") => {
+        const timestamp = new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        history.unshift({
+          id: Date.now(),
+          count: newCount,
+          timestamp,
+          note,
+        });
+        if (history.length > 10) {
+          history.pop();
+        }
+        renderHistory();
+      };
+      const renderHistory = () => {
+        if (history.length === 0) {
+          historyList.innerHTML = "";
+          noHistoryMsg.classList.remove("hidden");
+          return;
+        }
+        noHistoryMsg.classList.add("hidden");
+        historyList.innerHTML = history
+          .map(
+            (item, index) =>
+              `<li class="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5 relative group">
+            <div class="flex items-start gap-3">
+                <div class="flex-shrink-0 bg-[var(--primary-color)]/20 text-[var(--primary-color)] rounded-full size-10 flex items-center justify-center font-bold text-lg">
+                    ${item.count}
+                </div>
+                <div class="flex-grow">
+                    <p class="font-semibold text-sm">${
+                      item.note || "Saved Count"
+                    }</p>
+                    <p class="text-xs text-[var(--muted-text-color)]">${
+                      item.timestamp
+                    }</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button class="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-full transition-colors duration-200 hover:bg-gray-500/20 dark:hover:bg-zinc-700/50 active:scale-95" onclick="editHistoryItem(${
+                  item.id
+                })">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                       <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path>
+                    </svg>
+                </button>
+                <button class="p-2 text-red-500 hover:text-red-600 dark:hover:text-red-400 rounded-full transition-colors duration-200 hover:bg-red-500/10 dark:hover:bg-red-500/20 active:scale-95" onclick="promptDeleteHistoryItem(${
+                  item.id
+                })">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    </svg>
+                </button>
+            </div>
+        </li>`
+          )
+          .join("");
+      };
+      window.editHistoryItem = (id) => {
+        const itemIndex = history.findIndex((item) => item.id === id);
+        if (itemIndex > -1) {
+          const item = history[itemIndex];
+          const newNote = prompt("Edit note:", item.note);
+          if (newNote !== null) {
+            history[itemIndex].note = newNote.trim();
+            renderHistory();
+          }
+        }
+      };
+      window.promptDeleteHistoryItem = (id) => {
+        itemToDelete = id;
+        deleteConfirmationDialog.classList.add("show");
+      };
+      const deleteHistoryItem = (id) => {
+        history = history.filter((item) => item.id !== id);
+        renderHistory();
+      };
+      cancelDeleteBtn.addEventListener("click", () => {
+        itemToDelete = null;
+        deleteConfirmationDialog.classList.remove("show");
+      });
+      confirmDeleteBtn.addEventListener("click", () => {
+        if (itemToDelete !== null) {
+          deleteHistoryItem(itemToDelete);
+          itemToDelete = null;
+          deleteConfirmationDialog.classList.remove("show");
+        }
+      });
+      const showNoteDialog = () => {
+        noteDialog.classList.add("show");
+      };
+      const hideNoteDialog = () => {
+        noteDialog.classList.remove("show");
+        noteInput.value = "";
+      };
+      incrementBtn.addEventListener("click", () => {
+        count++;
+        if (count > 108) count = 108;
+        updateCounter();
+        if (count === 108) {
+          createConfetti();
+          counterValue.classList.add(
+            "scale-125",
+            "text-[var(--primary-color)]"
+          );
+          setTimeout(() => {
+            count = 0;
+            malaCount++;
+            updateCounter();
+            counterValue.classList.remove(
+              "scale-125",
+              "text-[var(--primary-color)]"
+            );
+          }, 1200);
+        }
+      });
+      decrementBtn.addEventListener("click", () => {
+        if (count > 0) {
+          count--;
+          updateCounter();
+        }
+      });
+      saveBtn.addEventListener("click", () => {
+        tempCount = count;
+        showNoteDialog();
+        saveBtn.classList.add(
+          "scale-110",
+          "bg-green-400/20",
+          "dark:bg-green-500/20"
+        );
+        setTimeout(() => {
+          saveBtn.classList.remove(
+            "scale-110",
+            "bg-green-400/20",
+            "dark:bg-green-500/20"
+          );
+        }, 300);
+      });
+      saveNoteBtn.addEventListener("click", () => {
+        addToHistory(tempCount, noteInput.value.trim());
+        hideNoteDialog();
+        showToast();
+      });
+      skipNoteBtn.addEventListener("click", () => {
+        addToHistory(tempCount);
+        hideNoteDialog();
+        showToast();
+      });
+      resetBtn.addEventListener("click", () => {
+        confirmationDialog.classList.add("show");
+      });
+      cancelResetBtn.addEventListener("click", () => {
+        confirmationDialog.classList.remove("show");
+      });
+      confirmResetBtn.addEventListener("click", () => {
+        count = 0;
+        malaCount = 0;
+        updateCounter();
+        addToHistory(0, "Counter Reset");
+        confirmationDialog.classList.remove("show");
+      });
+      toggleHistoryBtn.addEventListener("click", () => {
+        historySection.classList.toggle("hidden");
+        if (!historySection.classList.contains("hidden")) {
+          historySection.style.marginTop = "1.5rem";
+        } else {
+          historySection.style.marginTop = "0";
+        }
+      });
+      clearHistoryBtn.addEventListener("click", () => {
+        if (confirm("Are you sure you want to clear all history?")) {
+          history = [];
+          renderHistory();
+        }
+      });
+      // Initialize with some dummy history for better visual representation
+      history = [
+        { id: 1, count: 25, timestamp: "10:15 AM", note: "Morning meditation" },
+        { id: 2, count: 50, timestamp: "01:30 PM", note: "Post-lunch chant" },
+        {
+          id: 3,
+          count: 108,
+          timestamp: "06:00 PM",
+          note: "Evening reflection",
+        },
+      ];
+      renderHistory();
+      updateCounter();
+    </script>
+  </body>
+</html>
