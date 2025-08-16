@@ -98,13 +98,20 @@
         z-index: 100;
       }
       .progress-text-bg {
+        color: var(--progress-text-color);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      }
+      .dark .progress-text-bg {
         color: var(--progress-text-color-dark);
+        text-shadow: none;
       }
       .progress-text-fg {
         color: var(--progress-text-color);
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
       }
       .dark .progress-text-fg {
         color: var(--progress-text-color);
+        text-shadow: none;
       }
     </style>
     <style>
@@ -145,7 +152,7 @@
               id="theme-menu-button"
             >
               <svg
-                class="h-5 w-5 text-gray-700 dark:text-gray-300 transition-colors"
+                class="h-5 w-5 text-gray-700 dark:text-gray-100 transition-colors"
                 fill="none"
                 stroke="currentColor"
                 stroke-linecap="round"
@@ -221,84 +228,12 @@
               </div>
             </div>
           </div>
-          <button
-            class="group flex h-11 w-11 items-center justify-center rounded-full bg-white/10 dark:bg-zinc-800/50 shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 border border-white/20 dark:border-zinc-700/80"
-            id="save-btn"
-          >
-            <svg
-              class="h-5 w-5 text-gray-700 dark:text-gray-300"
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
-              ></path>
-              <polyline points="17 21 17 13 7 13 7 21"></polyline>
-              <polyline points="7 3 7 8 15 8"></polyline>
-            </svg>
-          </button>
-          <button
-            class="group flex items-center gap-2 rounded-full bg-white/10 dark:bg-zinc-800/50 px-4 py-2.5 text-sm font-semibold shadow-sm backdrop-blur-lg transition-all duration-300 hover:scale-105 active:scale-95 text-gray-700 dark:text-gray-200 border border-white/20 dark:border-zinc-700/80"
-            id="toggle-history"
-          >
-            <svg
-              class="text-gray-700 dark:text-gray-300"
-              fill="none"
-              height="18"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              width="18"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M1 4v6h6"></path>
-              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
-            </svg>
-            <span class="dark:text-gray-200">History</span>
-          </button>
         </div>
       </header>
       <main
         class="flex flex-grow flex-col items-center justify-center px-4 pb-16"
       >
         <div class="flex w-full flex-col items-center justify-center">
-          <div class="w-full max-w-sm" id="history-section-container">
-            <div
-              class="mt-0 hidden w-full max-w-sm overflow-hidden"
-              id="history-section"
-            >
-              <div
-                class="rounded-2xl bg-[rgba(var(--card-bg),0.7)] dark:bg-[rgba(var(--card-bg),0.5)] p-4 backdrop-blur-xl shadow-lg border border-white/20 dark:border-zinc-800"
-              >
-                <div class="mb-4 flex items-center justify-between">
-                  <h3 class="text-lg font-bold">History</h3>
-                  <button
-                    class="text-sm font-semibold text-red-500 transition-colors hover:text-red-600 dark:hover:text-red-400"
-                    id="clear-history"
-                  >
-                    Clear
-                  </button>
-                </div>
-                <ul
-                  class="max-h-60 space-y-2 overflow-y-auto pr-1"
-                  id="history-list"
-                ></ul>
-                <p
-                  class="mt-4 hidden text-center text-sm text-[var(--muted-text-color)]"
-                  id="no-history"
-                >
-                  No history yet.
-                </p>
-              </div>
-            </div>
-          </div>
           <div class="my-8 text-center">
             <span
               class="text-[140px] font-extrabold leading-none tracking-tighter transition-all duration-300 ease-in-out"
@@ -308,9 +243,11 @@
           </div>
           <div class="w-full max-w-sm px-4">
             <div
-              class="relative h-3.5 w-full rounded-full bg-gray-200 dark:bg-zinc-800 shadow-inner overflow-hidden"
+              class="relative h-6 w-full rounded-full bg-gray-200 dark:bg-zinc-800 shadow-inner overflow-hidden"
             >
-              
+              <div class="absolute inset-0 flex items-center justify-center">
+                
+              </div>
               <div
                 class="progress-bar-inner absolute left-0 top-0 h-full rounded-full bg-[var(--primary-color)]"
                 id="progress-bar"
@@ -320,7 +257,7 @@
                   class="absolute inset-0 flex items-center justify-center overflow-hidden"
                 >
                   <span
-                    class="progress-text-fg text-xs font-bold"
+                    class="progress-text-fg text-base font-bold"
                     id="progress-text-fg"
                     >0%</span
                   >
@@ -351,19 +288,19 @@
               </svg>
             </button>
             <button
-              class="group flex size-44 items-center justify-center rounded-full bg-[var(--primary-color)] shadow-2xl shadow-[var(--primary-color)]/40 backdrop-blur-sm transition-all duration-300 hover:scale-105 active:scale-95"
+              class="group flex size-56 items-center justify-center rounded-full bg-[var(--primary-color)] shadow-2xl shadow-[var(--primary-color)]/40 backdrop-blur-sm transition-all duration-300 hover:scale-105 active:scale-95"
               id="increment"
             >
               <svg
                 class="text-white"
                 fill="none"
-                height="96"
+                height="120"
                 stroke="currentColor"
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 stroke-width="3"
                 viewBox="0 0 24 24"
-                width="96"
+                width="120"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <line x1="12" x2="12" y1="5" y2="19"></line>
@@ -391,7 +328,7 @@
             id="reset-btn"
           >
             <svg
-              class="h-5 w-5 text-gray-700 dark:text-gray-300 transition-transform duration-500 ease-in-out group-hover:rotate-[-180deg]"
+              class="h-5 w-5 text-gray-700 dark:text-gray-100 transition-transform duration-500 ease-in-out group-hover:rotate-[-180deg]"
               fill="none"
               stroke="currentColor"
               stroke-linecap="round"
@@ -406,7 +343,7 @@
             <span>Reset</span>
           </button>
           <p class="text-xs text-[var(--muted-text-color)] mt-4">
-            Tirth @2025 V1.0
+            Tirth @2025 v1.0
           </p>
         </div>
       </footer>
@@ -528,7 +465,6 @@
       const incrementBtn = document.getElementById("increment");
       const decrementBtn = document.getElementById("decrement");
       const resetBtn = document.getElementById("reset-btn");
-      const saveBtn = document.getElementById("save-btn");
       const confirmationDialog = document.getElementById("confirmation-dialog");
       const cancelResetBtn = document.getElementById("cancel-reset");
       const confirmResetBtn = document.getElementById("confirm-reset");
@@ -537,11 +473,6 @@
       );
       const cancelDeleteBtn = document.getElementById("cancel-delete");
       const confirmDeleteBtn = document.getElementById("confirm-delete");
-      const toggleHistoryBtn = document.getElementById("toggle-history");
-      const historySection = document.getElementById("history-section");
-      const historyList = document.getElementById("history-list");
-      const clearHistoryBtn = document.getElementById("clear-history");
-      const noHistoryMsg = document.getElementById("no-history");
       const toast = document.getElementById("toast");
       const noteDialog = document.getElementById("note-dialog");
       const noteInput = document.getElementById("note-input");
@@ -562,6 +493,11 @@
       let toastTimeout;
       let tempCount;
       let itemToDelete = null;
+      const triggerHapticFeedback = () => {
+        if (navigator.vibrate) {
+          navigator.vibrate(200); // Vibrate for 200ms
+        }
+      };
       const createConfetti = () => {
         for (let i = 0; i < 50; i++) {
           const confetti = document.createElement("div");
@@ -663,62 +599,6 @@
         if (history.length > 10) {
           history.pop();
         }
-        renderHistory();
-      };
-      const renderHistory = () => {
-        if (history.length === 0) {
-          historyList.innerHTML = "";
-          noHistoryMsg.classList.remove("hidden");
-          return;
-        }
-        noHistoryMsg.classList.add("hidden");
-        historyList.innerHTML = history
-          .map(
-            (item, index) =>
-              `<li class="flex items-center justify-between p-3 rounded-lg bg-white/5 dark:bg-white/5 relative group">
-            <div class="flex items-start gap-3">
-                <div class="flex-shrink-0 bg-[var(--primary-color)]/20 text-[var(--primary-color)] rounded-full size-10 flex items-center justify-center font-bold text-lg">
-                    ${item.count}
-                </div>
-                <div class="flex-grow">
-                    <p class="font-semibold text-sm">${
-                      item.note || "Saved Count"
-                    }</p>
-                    <p class="text-xs text-[var(--muted-text-color)]">${
-                      item.timestamp
-                    }</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button class="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white rounded-full transition-colors duration-200 hover:bg-gray-500/20 dark:hover:bg-zinc-700/50 active:scale-95" onclick="editHistoryItem(${
-                  item.id
-                })">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                       <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path><path d="m15 5 4 4"></path>
-                    </svg>
-                </button>
-                <button class="p-2 text-red-500 hover:text-red-600 dark:hover:text-red-400 rounded-full transition-colors duration-200 hover:bg-red-500/10 dark:hover:bg-red-500/20 active:scale-95" onclick="promptDeleteHistoryItem(${
-                  item.id
-                })">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M3 6h18"></path><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                    </svg>
-                </button>
-            </div>
-        </li>`
-          )
-          .join("");
-      };
-      window.editHistoryItem = (id) => {
-        const itemIndex = history.findIndex((item) => item.id === id);
-        if (itemIndex > -1) {
-          const item = history[itemIndex];
-          const newNote = prompt("Edit note:", item.note);
-          if (newNote !== null) {
-            history[itemIndex].note = newNote.trim();
-            renderHistory();
-          }
-        }
       };
       window.promptDeleteHistoryItem = (id) => {
         itemToDelete = id;
@@ -726,7 +606,6 @@
       };
       const deleteHistoryItem = (id) => {
         history = history.filter((item) => item.id !== id);
-        renderHistory();
       };
       cancelDeleteBtn.addEventListener("click", () => {
         itemToDelete = null;
@@ -751,6 +630,7 @@
         if (count > 108) count = 108;
         updateCounter();
         if (count === 108) {
+          triggerHapticFeedback();
           createConfetti();
           counterValue.classList.add(
             "scale-125",
@@ -759,6 +639,8 @@
           setTimeout(() => {
             count = 0;
             malaCount++;
+            addToHistory(108, "Mala completed");
+            showToast();
             updateCounter();
             counterValue.classList.remove(
               "scale-125",
@@ -772,22 +654,6 @@
           count--;
           updateCounter();
         }
-      });
-      saveBtn.addEventListener("click", () => {
-        tempCount = count;
-        showNoteDialog();
-        saveBtn.classList.add(
-          "scale-110",
-          "bg-green-400/20",
-          "dark:bg-green-500/20"
-        );
-        setTimeout(() => {
-          saveBtn.classList.remove(
-            "scale-110",
-            "bg-green-400/20",
-            "dark:bg-green-500/20"
-          );
-        }, 300);
       });
       saveNoteBtn.addEventListener("click", () => {
         addToHistory(tempCount, noteInput.value.trim());
@@ -812,20 +678,6 @@
         addToHistory(0, "Counter Reset");
         confirmationDialog.classList.remove("show");
       });
-      toggleHistoryBtn.addEventListener("click", () => {
-        historySection.classList.toggle("hidden");
-        if (!historySection.classList.contains("hidden")) {
-          historySection.style.marginTop = "1.5rem";
-        } else {
-          historySection.style.marginTop = "0";
-        }
-      });
-      clearHistoryBtn.addEventListener("click", () => {
-        if (confirm("Are you sure you want to clear all history?")) {
-          history = [];
-          renderHistory();
-        }
-      });
       // Initialize with some dummy history for better visual representation
       history = [
         { id: 1, count: 25, timestamp: "10:15 AM", note: "Morning meditation" },
@@ -837,7 +689,6 @@
           note: "Evening reflection",
         },
       ];
-      renderHistory();
       updateCounter();
     </script>
   </body>
